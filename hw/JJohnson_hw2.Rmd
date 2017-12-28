@@ -1,0 +1,145 @@
+---
+title: "JJohnson_hw2"
+author: "Jen"
+date: "9/24/2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = FALSE, warning=FALSE}
+library(ggplot2)
+library(tidyverse)
+data <- read.csv("Taboo.csv")
+```
+
+## Question 1
+
+```{r}
+data %>%
+  select(Sex, Gender) %>%
+  group_by(Gender) %>%
+  summarize(mean.encounters = mean(Sex))
+```
+
+The mean number of sexual encounters per week for women is greater than for men.
+
+## Question 2
+
+```{r}
+female <- data %>%
+  filter(Gender == "F")
+male <- data %>%
+  filter(Gender == "M")
+
+ggplot() + geom_histogram(data = female, aes(Sex), fill = "red", alpha = 0.5) + geom_histogram(data = male, aes(Sex), alpha = 0.5) + xlab("Sexual Encounters per Week") + ylab("Number of Individuals") + ggtitle("Distribution of Sexual Encounters by Gender")
+
+ggplot(data, aes(x = Gender, y = Sex)) + geom_boxplot(aes(group = Gender)) + xlab("Gender") + ylab("Number of Sexual Encounters per Week") + ggtitle("Boxplot of Sexual Encounters by Gender")
+```
+
+From the layered histogram, most of the people claimed to have a low number of sexual encounters than high number. More men than women claimed to have low numbers. From the boxplot, there is a wider distribution of the middle 50% of women than men. The median of the male box is very close to the lower boundary. 
+
+## Question 3
+
+```{r}
+ggplot(data, mapping = aes(x = factor(Sex), y = Happiness)) + geom_point(aes(group = Sex)) + ggtitle("Impact of Mean Sexual Encounters on Happiness") + xlab("Mean Sexual Encounters per Week")
+```
+
+The most happy people claim to have 7-9 sexual encounters a week. The distribution of points is skewed, so more participants claimed to have <=4 encounters a week than >4. This observation is consistent with the findings of Q2. 
+There is a slight relationship between number of sexual encounters and happiness, as shown by the upward trend. However, I do not think this is significant due to due the skewed distribution and the presence of outliers.
+
+## Question 4
+
+```{r}
+#separate
+male_min <- data %>%
+  filter(Gender == "M") %>%
+  arrange(Happiness) %>%
+  mutate(rank.column = rank(Happiness)) %>% 
+  filter(rank.column == 1)
+
+male_max <- data %>%
+  filter(Gender == "M") %>%
+  arrange(Happiness) %>%
+  mutate(rank.column = rank(Happiness)) %>% 
+  filter(rank.column == nrow(male))
+
+female_min <- data %>%
+  filter(Gender == "F") %>%
+  arrange(Happiness) %>%
+  mutate(rank.column = rank(Happiness)) %>% 
+  filter(rank.column == 1)
+
+female_max <- data %>%
+  filter(Gender == "F") %>%
+  arrange(Happiness) %>%
+  mutate(rank.column = rank(Happiness)) %>% 
+  filter(rank.column == nrow(female))
+
+# combine
+mins_and_maxes <- rbind(male_min, male_max, female_min, female_max)
+df.mins_and_maxes <- as.data.frame(mins_and_maxes)
+# convert into category for coloring
+df.mins_and_maxes$rank.category <- df.mins_and_maxes$rank.column !=1
+
+#plot
+ggplot(data, mapping = aes(x = factor(Sex), y = Happiness)) + geom_point(aes(group = Sex, shape = Gender)) + geom_point(data = df.mins_and_maxes, aes(x = factor(Sex), y = Happiness, shape = Gender, color = rank.category))
+```
+
+The happiest male was almost 20 "happiness points" away from the happiest female. The difference between the saddest people was ~ 10 happiness points. The extremes for females had a medium number of sexual encounters. The extremes for males had more "extreme" numbers of sexual encounters. Therefore, it could be said that the correlation between sexual encounters for males is more representative than that for females.
+
+## Question 5
+
+```{r}
+ggplot(data, mapping = aes(x = factor(Sex), y = Happiness)) + geom_point() + geom_point(data = df.mins_and_maxes, aes(x = factor(Sex), y = Happiness, color = rank.category)) + facet_wrap(~Gender)
+```
+
+I like this graph better. In the Q4 graph, many of the dots overlap each other and it is difficult to distinguish between the male and female dots, even when they are grouped by shape. I can still compare the difference between genders easily in this graph.
+
+## Question 6
+
+```{r}
+data %>%
+  select(Gender, Marijuana) %>%
+  group_by(Gender, Marijuana) %>%
+  summarize(n())
+
+data %>%
+  select(Gender, Cigarette) %>%
+  group_by(Gender, Cigarette) %>%
+  summarize(n())
+```
+
+Fewer people of both genders smoke Marijuana than do not smoke it. A higher proportion of women smoke than do not smoke, but for men it is the opposite.   
+
+## Question 7
+
+```{r}
+alcohol.salary.happiness <- select(data, Alcohol, Salary, Happiness)
+no.alcohol <- alcohol.salary.happiness %>% filter(Alcohol < 1)
+some.alcohol <- alcohol.salary.happiness %>% filter(between(Alcohol, 1, 3))
+yes.alcohol <- alcohol.salary.happiness %>% filter(Alcohol >3)
+
+ggplot(data = data, aes(x = Salary, y = Happiness)) + geom_point(data = no.alcohol) + geom_point(data = some.alcohol, color = "blue") + geom_point(data = yes.alcohol, color = "red")
+```
+
+There are not very many people who never drink, and they have generally lower salaries and medium levels of happiness. The people who have a few drinks have a wide range of both salaries and happiness. The people who have the most drinks have an even wider range for happiness. 
+
+## Question 8
+
+There do not seem to be significant differences between "taboo" factors for the Genders (number of sexual encounters, use of marijuana/cigarettes). The graphs in 3-5 show that they may be a slight correlation between male alcohol consumption and happiness, but I do not think this is significant. This is because the distribution of the colored dots in Q7 do not show any pattern. There is not a relationship between salary and happiness either.
+
+```{r}
+data %>%
+  select(Salary, Gender) %>%
+  group_by(Gender) %>%
+  summarize(mean.encounters = mean(Salary))
+
+ggplot() + geom_histogram(data = female, aes(Salary), fill = "red", alpha = 0.5) + geom_histogram(data = male, aes(Salary), alpha = 0.5) + xlab("Salary") + ylab("Number of Individuals") + ggtitle("Distribution of Salary by Gender")
+```
+
+The mean salary is slightly higher for men than for women, but the difference is negligible. Men have a much higher number of individuals of median salary (5.5e04). There are a larger number of women who have salaries < 4e04 than men. Above 8e04, there are about the same number of individuals.

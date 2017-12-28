@@ -1,0 +1,115 @@
+---
+title: "Test 2"
+author: "Jen Johnson"
+date: "11/6/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = FALSE, warning = FALSE}
+
+library(ggplot2)
+library(babynames)
+library(tidyverse)
+library(plyr)
+```
+
+## Question 1
+
+Set up the dataset.
+```{r}
+
+years <- rep(c(2012, 2013, 2014, 2015, 2016), 3)
+positions <- c(rep("Research Assistant", 5), rep("Instructor", 5), rep("Consultant", 5))
+incomes <- c(22000, 24900, 24900, 24900, 26500, 0, 5000, 7000, 6800, 6800, 0, 5000, 4800, 15000, 30000)
+
+df <- data.frame(years, positions, incomes)
+df$years <- as.numeric(as.character(df$years))
+
+```
+
+Plot.
+```{r}
+
+ggplot(df, aes(x = years, y = incomes, fill = positions)) + 
+  geom_area() + 
+  ggtitle("Alex's Income in Various Jobs") + 
+  xlab("Year") + 
+  ylab("Income ($)") +
+  theme_bw() + 
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), axis.line = element_line(colour = "black")) +
+  scale_fill_manual(values=c("#36B3F2", "#ECEC00", "#BA3F02")) +
+  theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+## Question 2
+
+Find the 2 names to use. 
+```{r}
+df <- babynames
+
+year.range <- range(df$year)
+
+initial.prop <- df %>%
+  filter(year == year.range[1]) %>%
+  select(sex, name, prop)
+
+colnames(initial.prop)[3] <- "initial.prop"
+
+final.prop <- df %>%
+  filter(year == year.range[2])  %>%
+  select(sex, name, prop)
+
+colnames(final.prop)[3] <- "final.prop"
+
+joined <- join(initial.prop, final.prop, by = c("sex", "name"), type = "inner") %>%
+  mutate(change.in.prop = abs(initial.prop - final.prop)) %>%
+  arrange(desc(change.in.prop))
+
+girl <- joined %>%
+  filter(sex == "F") %>%
+  mutate(rank.column.name = rank(-change.in.prop)) %>%
+  filter(rank.column.name <=1) %>%
+  select(name)
+
+boy <- joined %>%
+  filter(sex == "M") %>%
+  mutate(rank.column.name = rank(-change.in.prop)) %>%
+  filter(rank.column.name <=1) %>%
+  select(name)
+
+```
+
+Set up the dataset with the two names.
+```{r}
+girl.data <- df %>%
+  filter(name == girl[[1]], sex == "F")
+
+boy.data <- df %>%
+  filter(name == boy[[1]], sex == "M")
+
+data <- rbind(girl.data, boy.data)
+
+```
+
+Plot.
+```{r}
+
+ggplot(data, aes(x=year, y = prop, color = name)) + 
+  geom_line() + 
+  scale_color_manual(values = c("blue", "pink")) +
+  ggtitle("Names With Largest Change in Usage Between 1880 and 2015") + 
+  xlab("Year") + 
+  ylab("Proportion of Usage") +
+  theme_bw() + 
+  theme(legend.position = "none") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_wrap(~name, ncol = 1)
+
+```
+
+I have neither given nor received unauthorized aid on this exam. Jennifer Johnson

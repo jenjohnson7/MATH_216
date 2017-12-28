@@ -1,0 +1,22 @@
+---
+title: "R_markdown_sample"
+author: "Jen"
+date: "9/18/2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Title
+
+This is the body. Try RSweave as similar to Latex. Turn in this .Rmd file and the PDF. Use {r echo = FALSE} to remove code
+
+```{r}
+x <-5
+y <-7
+plot(x,y)
+```

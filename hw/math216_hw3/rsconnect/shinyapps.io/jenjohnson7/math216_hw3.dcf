@@ -1,0 +1,13 @@
+name: math216_hw3
+title: math216_hw3
+username:
+account: jenjohnson7
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 231141
+bundleId: 1057123
+url: https://jenjohnson7.shinyapps.io/math216_hw3/
+when: 1509671694.29776
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Country.csv|hw3_testing.R
